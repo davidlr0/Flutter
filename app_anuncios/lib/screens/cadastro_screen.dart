@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:app_anuncios/models/anuncio.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CadastroScreen extends StatefulWidget {
   Anuncio ads;
@@ -15,6 +18,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
   final TextEditingController _descricaoController = TextEditingController();
   final TextEditingController _precoController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  File _image;
   Anuncio ads;
 
   @override
@@ -25,6 +29,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
         _tituloController.text = widget.ads.titulo;
         _descricaoController.text = widget.ads.descricao;
         _precoController.text = widget.ads.preco.toString();
+        _image = widget.ads.image;
       });
     }
   }
@@ -40,6 +45,36 @@ class _CadastroScreenState extends State<CadastroScreen> {
         key: _formKey,
         child: Column(
           children: [
+            GestureDetector(
+              child: Container(
+                margin: EdgeInsets.fromLTRB(0, 20, 0, 10),
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  border: Border.all(width: 1),
+                  shape: BoxShape.circle,
+                ),
+                child: _image == null
+                    ? Icon(
+                        Icons.add_a_photo,
+                        size: 30,
+                      )
+                    : ClipOval(
+                        child: Image.file(_image),
+                      ),
+              ),
+              onTap: () async {
+                final picker = ImagePicker();
+                final pickedFile =
+                    await picker.getImage(source: ImageSource.camera);
+                if (pickedFile != null) {
+                  setState(() {
+                    _image = File(pickedFile.path);
+                  });
+                }
+              },
+            ),
             Container(
               child: Text(
                 "Título do anúncio",
@@ -127,6 +162,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                             _tituloController.text,
                             _descricaoController.text,
                             double.parse(_precoController.text),
+                            _image,
                           );
                           Navigator.pop(context, ads);
                         }

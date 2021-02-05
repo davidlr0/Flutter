@@ -1,5 +1,6 @@
 import 'package:app_anuncios/models/anuncio.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'cadastro_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -45,25 +46,93 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: Card(
                 child: ListTile(
-                  title: Text(_lista[index].titulo),
-                  subtitle: Text(_lista[index].descricao),
-                  trailing: Text("R\$ ${_lista[index].preco}"),
-                  leading: Icon(Icons.star_border_outlined),
-                  onLongPress: () async {
-                    Anuncio ads = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CadastroScreen(ads: _lista[index]),
-                        ));
-                    if (ads != null) {
-                      setState(() {
-                        _lista.removeAt(index);
-                        _lista.insert(index, ads);
-                      });
-                    }
-                  },
-                ),
+                    title: Text(_lista[index].titulo),
+                    subtitle: Text(_lista[index].descricao),
+                    trailing: Text("R\$ ${_lista[index].preco}"),
+                    leading: _lista[index].image == null
+                        ? Icon(Icons.star_border_outlined)
+                        : CircleAvatar(
+                            child: ClipOval(
+                              child: Image.file(
+                                _lista[index].image,
+                                width: 200,
+                                height: 200,
+                              ),
+                            ),
+                          ),
+                    onTap: () async {
+                      Anuncio ads = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                CadastroScreen(ads: _lista[index]),
+                          ));
+                      if (ads != null) {
+                        setState(() {
+                          _lista.removeAt(index);
+                          _lista.insert(index, ads);
+                        });
+                      }
+                    },
+                    onLongPress: () async {
+                      showBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return Container(
+                            padding: EdgeInsets.all(10),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ListTile(
+                                  leading: Icon(Icons.email),
+                                  title: Text("Enviar por email"),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    final Uri params = Uri(
+                                      scheme: 'mailto',
+                                      path: 'david@redesbrasil.com',
+                                      queryParameters: {
+                                        'subject': '${_lista[index].titulo}',
+                                        'body': 'Descrição do produto: ${_lista[index].descricao}.' +
+                                            '\nPreço: R\$${_lista[index].preco}'
+                                      },
+                                    );
+                                    final url = params.toString();
+                                    if (await canLaunch(url)) {
+                                      await launch(url);
+                                    } else {
+                                      print("Erro ao enviar o email");
+                                    }
+                                  },
+                                ),
+                                ListTile(
+                                  leading: Icon(Icons.sms),
+                                  title: Text("Enviar um sms"),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    final Uri params = Uri(
+                                      scheme: 'sms',
+                                      path: '+5564000000000',
+                                      queryParameters: {
+                                        'body': 'Produto: ${_lista[index].titulo}' +
+                                            '\nDescrição do produto: ${_lista[index].descricao}.' +
+                                            '\nPreço: R\$${_lista[index].preco}'
+                                      },
+                                    );
+                                    final url = params.toString();
+                                    if (await canLaunch(url)) {
+                                      await launch(url);
+                                    } else {
+                                      print("Erro ao enviar o sms");
+                                    }
+                                  },
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    }),
                 shadowColor: Theme.of(context).secondaryHeaderColor),
           );
         },
