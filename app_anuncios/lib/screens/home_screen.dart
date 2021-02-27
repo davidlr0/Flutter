@@ -1,3 +1,4 @@
+import 'package:app_anuncios/helpers/ads_helper.dart';
 import 'package:app_anuncios/models/anuncio.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,6 +13,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Anuncio> _lista = List();
+  AdsHelper _adsHelper = AdsHelper();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _adsHelper.getAll().then((data) {
+      if (data != null) {
+        setState(() {
+          _lista = data;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +54,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             direction: DismissDirection.startToEnd,
-            onDismissed: (direction) {
+            onDismissed: (direction) async {
+              await _adsHelper.deleteAnuncio(_lista[index].id);
+
               setState(() {
                 _lista.removeAt(index);
               });
@@ -68,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 CadastroScreen(ads: _lista[index]),
                           ));
                       if (ads != null) {
+                        await _adsHelper.editAnuncio(ads);
                         setState(() {
                           _lista.removeAt(index);
                           _lista.insert(index, ads);
@@ -90,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Navigator.pop(context);
                                     final Uri params = Uri(
                                       scheme: 'mailto',
-                                      path: 'david@redesbrasil.com',
+                                      path: 'david@localhost.com',
                                       queryParameters: {
                                         'subject': '${_lista[index].titulo}',
                                         'body': 'Descrição do produto: ${_lista[index].descricao}.' +
@@ -143,7 +161,10 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () async {
           Anuncio ads = await Navigator.push(context,
               MaterialPageRoute(builder: (context) => CadastroScreen()));
+
           if (ads != null) {
+            await _adsHelper.saveAds(ads);
+
             setState(() {
               _lista.add(ads);
             });
