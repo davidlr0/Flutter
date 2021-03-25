@@ -1,40 +1,33 @@
 import 'dart:convert';
-import 'package:app_anuncios/models/anuncio.dart';
 import 'package:app_anuncios/models/usuario.dart';
-import 'package:app_anuncios/services/anuncio_service.dart';
+import 'package:app_anuncios/services/usuario_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-class CadastroScreen extends StatefulWidget {
-  Anuncio ads;
+class CadastroUser extends StatefulWidget {
   Usuario user;
-  CadastroScreen({this.user, this.ads});
+  CadastroUser({this.user});
 
   @override
-  _CadastroScreenState createState() => _CadastroScreenState();
+  _CadastroUserState createState() => _CadastroUserState();
 }
 
-class _CadastroScreenState extends State<CadastroScreen> {
-  final TextEditingController _tituloController = TextEditingController();
-  final TextEditingController _descricaoController = TextEditingController();
-  final TextEditingController _precoController = TextEditingController();
+class _CadastroUserState extends State<CadastroUser> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _telefoneController = TextEditingController();
+  final TextEditingController _senhaController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  int _id;
   int _userId;
+
   @override
   void initState() {
     super.initState();
 
-    if (widget.ads != null) {
-      setState(() {
-        _tituloController.text = widget.ads.titulo;
-        _descricaoController.text = widget.ads.descricao;
-        _precoController.text = widget.ads.preco.toString();
-        _id = widget.ads.id;
-      });
-    }
     if (widget.user != null) {
       setState(() {
+        _usernameController.text = widget.user.nome;
+        _telefoneController.text = widget.user.telefone;
+        _senhaController.text = widget.user.senha;
         _userId = widget.user.id;
       });
     }
@@ -54,7 +47,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
             children: [
               Container(
                 child: Text(
-                  "Título do anúncio",
+                  "Nome de Usuário",
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 18,
@@ -65,7 +58,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               Container(
                 child: TextFormField(
-                  controller: _tituloController,
+                  controller: _usernameController,
                   style: TextStyle(fontSize: 16),
                   validator: (value) {
                     if (value.isEmpty) {
@@ -77,7 +70,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               Container(
                 child: Text(
-                  "Descrição do produto",
+                  "Senha",
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 18,
@@ -88,8 +81,9 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               Container(
                 child: TextFormField(
-                  controller: _descricaoController,
+                  controller: _senhaController,
                   style: TextStyle(fontSize: 16),
+                  obscureText: true,
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Campo obrigatório";
@@ -100,7 +94,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               Container(
                 child: Text(
-                  "Preço do produto (R\$)",
+                  "Telefone",
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 18,
@@ -111,14 +105,14 @@ class _CadastroScreenState extends State<CadastroScreen> {
               ),
               Container(
                 child: TextFormField(
-                  controller: _precoController,
+                  controller: _telefoneController,
                   keyboardType: TextInputType.number,
                   style: TextStyle(fontSize: 16),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Campo obrigatório";
-                    } else if (RegExp(r'^.*[,-].*$').hasMatch(value)) {
-                      return "Caracteres permitidos: 0-9.";
+                    } else if (!RegExp(r'^[0-9]*$').hasMatch(value)) {
+                      return "Somente números";
                     }
                   },
                 ),
@@ -135,17 +129,18 @@ class _CadastroScreenState extends State<CadastroScreen> {
                         child: Text("Cadastrar"),
                         onPressed: () async {
                           if (_formKey.currentState.validate()) {
+                            UsuarioService userService = UsuarioService();
                             Map<String, dynamic> data = {
-                              "id": _id == null ? 0 : _id,
-                              "titulo": _tituloController.text,
-                              "descricao": _descricaoController.text,
-                              "preco": double.parse(_precoController.text),
-                              "usuarioId": _userId == null ? 0 : _userId,
+                              "id": _userId == null ? 0 : _userId,
+                              "nome": _usernameController.text,
+                              "senha": _senhaController.text,
+                              "telefone": _telefoneController.text
                             };
-                            Anuncio ads = anuncioFromJson(jsonEncode(data));
+                            Usuario user =
+                                Usuario().usuarioFromJson(jsonEncode(data));
 
-                            await AnuncioService().createOrUpdateAds(ads);
-                            Navigator.pop(context, ads);
+                            await userService.createOrUpdateUser(user);
+                            Navigator.pop(context, user);
                           }
                         },
                       ),

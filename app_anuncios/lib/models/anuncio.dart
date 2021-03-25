@@ -1,30 +1,42 @@
-import 'dart:io';
+import 'dart:convert';
+
+Anuncio anuncioFromJson(String str) => Anuncio.fromJson(json.decode(str));
+
+String anuncioToJson(Anuncio data) => json.encode(data.toJson());
 
 class Anuncio {
+  Anuncio({
+    this.id,
+    this.titulo,
+    this.descricao,
+    this.preco,
+    this.usuarioId,
+  });
+
   int id;
-  String titulo, descricao;
+  String titulo;
+  String descricao;
   double preco;
-  File image;
+  int usuarioId;
 
-  Anuncio(this.titulo, this.descricao, this.preco, this.image);
-  Map toMap() {
-    Map<String, dynamic> map = {
-      '_id': this.id,
-      'titulo': this.titulo,
-      'descricao': this.descricao,
-      'preco': this.preco
-    };
-    return map;
-  }
+  factory Anuncio.fromJson(Map<String, dynamic> json) => Anuncio(
+        id: json["id"],
+        titulo: json["titulo"],
+        descricao: json["descricao"],
+        preco: json["preco"].toDouble(),
+        usuarioId: json["usuarioId"],
+      );
 
-  Anuncio.fromMap(Map map) {
-    this.id = map['_id'];
-    this.titulo = map['titulo'];
-    this.descricao = map['descricao'];
-    this.preco = map['preco'];
-  }
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "titulo": titulo,
+        "descricao": descricao,
+        "preco": preco,
+        "usuarioId": usuarioId,
+      };
 
   @override
-  String toString() =>
-      "Anuncio (id: $id, titulo: $titulo, descricao: $descricao, preco: $preco";
+  String toString() {
+    return "Id: $id, Titulo: $titulo, Descricao: $descricao, Preco: $preco, usuarioId: $usuarioId";
+  }
 }

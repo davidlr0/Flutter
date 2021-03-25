@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:app_anuncios/screens/home_screen.dart';
+
+import 'screens/login_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,7 +14,6 @@ class MyApp extends StatelessWidget {
       title: 'App de Anúncios',
       theme: ThemeData(
           primaryColor: Colors.pink,
-          // primarySwatch: Colors.lightBlue,
           secondaryHeaderColor: Colors.lightBlue[300],
           cursorColor: Colors.pink,
           inputDecorationTheme: InputDecorationTheme(
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
             buttonColor: Colors.pink,
             textTheme: ButtonTextTheme.primary,
           )),
-      home: HomeScreen(),
+      home: LoginScreen(),
     );
   }
 }
